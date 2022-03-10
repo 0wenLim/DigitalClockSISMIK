@@ -60,7 +60,6 @@ void loop() {
   // Display time
   displayTime(hours, mins);
   
-  digitalWrite(LED_BUILTIN,HIGH);
   if(digitalRead(button3)==HIGH){
     displayTime(alarmHours, alarmMins);
     attachInterrupt(digitalPinToInterrupt(button1), addMinsAlarm, RISING);
@@ -122,16 +121,15 @@ void addMinsAlarm()
   }
   else if (alarmMins == 59) {
     alarmMins = 0;
-    addHours();
   }
 }
 
 void addHoursAlarm()
 {
-  if (hours < 23 && hours >= 0) {
-    hours++;
+  if (alarmHours < 23 && alarmHours >= 0) {
+    alarmHours++;
   }
-  else if (hours == 23) {
+  else if (alarmHours == 23) {
     hours = 0;
  }
 }
