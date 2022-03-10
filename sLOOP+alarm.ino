@@ -53,7 +53,9 @@ void setup() {
   pinMode(button2, INPUT);
   pinMode(button3, INPUT);
   pinMode(buzzer, OUTPUT);
-
+ 
+  attachInterrupt(digitalPinToInterrupt(button1), addMinsAlarm, RISING);
+  attachInterrupt(digitalPinToInterrupt(button2), addHoursAlarm, RISING);
 }
 
 void loop() {
@@ -62,8 +64,7 @@ void loop() {
   
   if(digitalRead(button3)==HIGH){
     displayTime(alarmHours, alarmMins);
-    attachInterrupt(digitalPinToInterrupt(button1), addMinsAlarm, RISING);
-    attachInterrupt(digitalPinToInterrupt(button2), addHoursAlarm, RISING);
+
   }
   
   if((mins == alarmMins) && (hours == alarmHours)) {
