@@ -59,12 +59,12 @@ void setup() {
 }
 
 void loop() {
-  // Display time
-  displayTime(hours, mins);
-  
+
   if(digitalRead(button3)==HIGH){
     displayTime(alarmHours, alarmMins);
-
+  }
+  else{
+    displayTime(hours, mins);
   }
   
   if((mins == alarmMins) && (hours == alarmHours)) {
