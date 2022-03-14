@@ -1,5 +1,4 @@
-
- //include library
+//include library
 #include <TM1637.h>
 
 //declare variable
@@ -77,9 +76,7 @@ void loop() {
 }
 
 ISR(TIMER1_COMPA_vect){
-  //Reset counter
   TCNT1  = 0;
-  //Add seconds
   addSecs();
 }
 
@@ -131,7 +128,7 @@ void addHoursAlarm()
     alarmHours++;
   }
   else if (alarmHours == 23) {
-    hours = 0;
+    alarmHours = 0;
  }
 }
 
