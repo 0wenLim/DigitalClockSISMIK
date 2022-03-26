@@ -1,18 +1,32 @@
 //include library
 #include <TM1637.h>
+#include <PinChangeInterrupt.h>
 
 //declare variable
-int secs;
-int mins;
-int hours;
-int alarmMins=0;
-int alarmHours=0;
+int secs=50;
+int mins=58;
+int hours=23;
+int alarmMins=59;
+int alarmHours=23;
+int stopwatchSecs=0;
+int stopwatchMins=0;
+int state = 0;
+int startMillis;
 
 //declare function
 void addSecs();
 void addMins();
 void addHours();
-void displayTime(int hours, int minutes);
+void addMinsAlarm();
+void addHoursAlarm();
+void addSecsStopwatch();
+void addMinsStopwatch();
+void resetStopwatch();
+void pauseStopwatch();
+void displayTime(int biggerTime, int smallerTime);
+void tekan1();
+void tekan2();
+void changeMode();
 
 //declare pin
 int CLKPin = 5;
@@ -23,14 +37,7 @@ int button2 = 3;
 int button3 = 4;
 int buzzer = 8;
 
-void setup() {
-  Serial.begin(9600);
-
-  //waktu awal
-  secs = 40;
-  mins = 59;
-  hours = 23;
-  
+void setup() {  
   cli();  // Disable Interrupt
   
   //initialize timer register
@@ -54,15 +61,18 @@ void setup() {
  
   attachInterrupt(digitalPinToInterrupt(button1), tekan1, RISING);
   attachInterrupt(digitalPinToInterrupt(button2), tekan2, RISING);
+  attachPCINT(digitalPinToPCINT(button3), changeMode, RISING);
 }
 
-void loop() {
-
-  if(digitalRead(button3)==HIGH){
+void loop() {  
+  if(state==0){
+    displayTime(hours, mins);
+  }    
+  else if(state==1){
     displayTime(alarmHours, alarmMins);
   }
-  else{
-    displayTime(hours, mins);
+  else if(state==2){
+    displayTime(stopwatchMins, stopwatchSecs);
   }
   
   if((mins == alarmMins) && (hours == alarmHours)) {
@@ -71,16 +81,15 @@ void loop() {
   else{
     digitalWrite(buzzer, LOW);
   }
-
 }
 
 ISR(TIMER1_COMPA_vect){
   TCNT1  = 0;
   addSecs();
+  addSecsStopwatch();
 }
 
-void addSecs()
-{
+void addSecs(){
   if (secs < 59 && secs >= 0) {
     secs++;
   }
@@ -90,8 +99,7 @@ void addSecs()
   }
 }
 
-void addMins()
-{
+void addMins(){
   if (mins < 59 && mins >= 0) {
     mins++;
   }
@@ -101,8 +109,7 @@ void addMins()
   }
 }
 
-void addHours()
-{
+void addHours(){
   if (hours < 23 && hours >= 0) {
     hours++;
   }
@@ -111,8 +118,7 @@ void addHours()
   }
 }
 
-void addMinsAlarm()
-{
+void addMinsAlarm(){
   if (alarmMins < 59 && alarmMins >= 0) {
     alarmMins++;
   }
@@ -121,8 +127,7 @@ void addMinsAlarm()
   }
 }
 
-void addHoursAlarm()
-{
+void addHoursAlarm(){
   if (alarmHours < 23 && alarmHours >= 0) {
     alarmHours++;
   }
@@ -131,28 +136,77 @@ void addHoursAlarm()
  }
 }
 
-void displayTime(int hours, int minutes) {
-  tm1637.display(0, (hours/10)%10); //puluhan jam
-  tm1637.display(1, hours%10);  //satuan jam
+void addSecsStopwatch(){
+  if (stopwatchSecs < 59 && stopwatchSecs >= 0) {
+    stopwatchSecs++;
+  }
+  else if (stopwatchSecs == 59) {
+    stopwatchSecs = 0;
+    addMinsStopwatch();
+  }
+}
+
+void addMinsStopwatch(){
+  if (stopwatchMins < 59 && stopwatchMins >= 0) {
+    stopwatchMins++;
+  }
+  else if (stopwatchSecs == 59) {
+    stopwatchMins = 0;
+  }
+}
+
+void resetStopwatch(){
+  stopwatchMins=0;
+  stopwatchSecs=0;
+}
+
+void pauseStopwatch(){
+  while(digitalRead(button2)){
+    stopwatchSecs=0;
+    stopwatchMins=0;  
+  }
+}
+
+void displayTime(int biggerTime, int smallerTime) {
+  tm1637.display(0, (biggerTime/10)%10); //puluhan waktu yang lebih besar (jam atau menit)
+  tm1637.display(1, biggerTime%10);  //satuan waktu yang lebih besar (jam atau menit)
   tm1637.point(1);
-  tm1637.display(2, (minutes/10)%10); //puluhan menit
-  tm1637.display(3, minutes%10);  //satuan menit
+  tm1637.display(2, (smallerTime/10)%10); //puluhan waktu yang lebih kecil (jam atau menit)
+  tm1637.display(3, smallerTime%10);  //satuan waktu yang lebih kecil (jam atau menit)
 }
 
 void tekan1(){
-  if (digitalRead(button3)==LOW){
+  if(state==0){
     addMins();
   }
-  else{
+  else if (state==1){
     addMinsAlarm();
+  }
+  else if (state==2){
+    resetStopwatch();
   }
 }
 
 void tekan2(){
-  if (digitalRead(button3)==LOW){
+  if(state==0){
     addHours();
   }
-  else{
+  else if (state==1){
     addHoursAlarm();
   }
+  else if (state==2){
+    pauseStopwatch();
+  }
+}
+
+void changeMode(){
+  if(state==0){
+      state = 1;  
+  }    
+  else if(state==1){
+      state = 2;
+  }
+  else if(state==2){
+      state = 0;
+  }  
 }
