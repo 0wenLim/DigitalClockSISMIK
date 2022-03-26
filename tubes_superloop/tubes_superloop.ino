@@ -162,8 +162,8 @@ void resetStopwatch(){
 
 void pauseStopwatch(){
   while(digitalRead(button2)){
-    stopwatchSecs=0;
-    stopwatchMins=0;  
+    stopwatchSecs=stopwatchSecs;
+    stopwatchMins=stopwatchMins;  
   }
 }
 
