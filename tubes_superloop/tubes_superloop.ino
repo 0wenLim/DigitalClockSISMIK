@@ -1,3 +1,8 @@
+/*  Program Jam Digital Superloop
+    By Wifal Inola (13219002) and Owen Limvin (13219064)
+    Kelompok 13    
+*/
+
 //include library
 #include <TM1637.h>
 #include <PinChangeInterrupt.h>
@@ -11,10 +16,9 @@ int alarmHours=23;
 int stopwatchSecs=0;
 int stopwatchMins=0;
 int state = 0;
-int startMillis;
 
 //declare function
-void addSecs();
+void addSecs(); 
 void addMins();
 void addHours();
 void addMinsAlarm();
@@ -39,7 +43,7 @@ int buzzer = 8;
 
 void setup() {  
   cli();  // Disable Interrupt
-  
+ 
   //initialize timer register
   TCCR1A = 0; // initialise register TCCR1A
   TCCR1B = 0; // initialise register TCCR1B
@@ -58,7 +62,8 @@ void setup() {
   pinMode(button2, INPUT);
   pinMode(button3, INPUT);
   pinMode(buzzer, OUTPUT);
- 
+
+ //Interrupt Initialization
   attachInterrupt(digitalPinToInterrupt(button1), tekan1, RISING);
   attachInterrupt(digitalPinToInterrupt(button2), tekan2, RISING);
   attachPCINT(digitalPinToPCINT(button3), changeMode, RISING);
@@ -83,12 +88,14 @@ void loop() {
   }
 }
 
+// Interrupt Service Routine 
 ISR(TIMER1_COMPA_vect){
   TCNT1  = 0;
   addSecs();
   addSecsStopwatch();
 }
 
+// Fungsi menambah detik jam digital
 void addSecs(){
   if (secs < 59 && secs >= 0) {
     secs++;
@@ -99,6 +106,7 @@ void addSecs(){
   }
 }
 
+// Fungsi menambah menit jam digital
 void addMins(){
   if (mins < 59 && mins >= 0) {
     mins++;
@@ -109,6 +117,7 @@ void addMins(){
   }
 }
 
+// Fungsi menambah jam di jam digital
 void addHours(){
   if (hours < 23 && hours >= 0) {
     hours++;
@@ -118,6 +127,7 @@ void addHours(){
   }
 }
 
+// Fungsi menambah menit alarm jam digital
 void addMinsAlarm(){
   if (alarmMins < 59 && alarmMins >= 0) {
     alarmMins++;
@@ -127,6 +137,7 @@ void addMinsAlarm(){
   }
 }
 
+// Fungsi menambah jam alarm di jam digital
 void addHoursAlarm(){
   if (alarmHours < 23 && alarmHours >= 0) {
     alarmHours++;
@@ -136,6 +147,7 @@ void addHoursAlarm(){
  }
 }
 
+// Fungsi menambah detik stopwatch 
 void addSecsStopwatch(){
   if (stopwatchSecs < 59 && stopwatchSecs >= 0) {
     stopwatchSecs++;
@@ -146,6 +158,7 @@ void addSecsStopwatch(){
   }
 }
 
+// Fungsi menambah menit stopwatch
 void addMinsStopwatch(){
   if (stopwatchMins < 59 && stopwatchMins >= 0) {
     stopwatchMins++;
@@ -155,11 +168,13 @@ void addMinsStopwatch(){
   }
 }
 
+// Fungsi reset stopwatch
 void resetStopwatch(){
   stopwatchMins=0;
   stopwatchSecs=0;
 }
 
+// Fungsi pause stopwatch
 void pauseStopwatch(){
   while(digitalRead(button2)){
     stopwatchSecs=stopwatchSecs;
@@ -167,6 +182,7 @@ void pauseStopwatch(){
   }
 }
 
+// Fungsi display jam, alarm, dan stopwatch
 void displayTime(int biggerTime, int smallerTime) {
   tm1637.display(0, (biggerTime/10)%10); //puluhan waktu yang lebih besar (jam atau menit)
   tm1637.display(1, biggerTime%10);  //satuan waktu yang lebih besar (jam atau menit)
@@ -175,38 +191,41 @@ void displayTime(int biggerTime, int smallerTime) {
   tm1637.display(3, smallerTime%10);  //satuan waktu yang lebih kecil (jam atau menit)
 }
 
+// Fungsi apabila button1 ditekan
 void tekan1(){
-  if(state==0){
+  if(state==0){   //mode jam digital
     addMins();
   }
-  else if (state==1){
+  else if (state==1){ // mode alarm
     addMinsAlarm();
   }
-  else if (state==2){
+  else if (state==2){ // mode stopwatch
     resetStopwatch();
   }
 }
 
+// Fungsi apabila button2 ditekan
 void tekan2(){
-  if(state==0){
+  if(state==0){ // mode jam digital
     addHours();
   }
-  else if (state==1){
+  else if (state==1){ // mode alarm
     addHoursAlarm();
   }
-  else if (state==2){
+  else if (state==2){ // mode stopwatch
     pauseStopwatch();
   }
 }
 
+// Fungsi apabila button3 ditekan untuk mengubah mode
 void changeMode(){
-  if(state==0){
+  if(state==0){   //jam digital -> alarm
       state = 1;  
   }    
-  else if(state==1){
+  else if(state==1){  // alarm -> stopwatch
       state = 2;
   }
-  else if(state==2){
+  else if(state==2){  // stopwatch -> jam digital
       state = 0;
   }  
 }
